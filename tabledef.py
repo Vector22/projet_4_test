@@ -80,24 +80,6 @@ class Foods(Base):
                                      self.ingredients, self.url)
 
 
-"""class MyFoods(Base):
-    __tablename__ = "myfoods"
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String(100), nullable=False)
-    url = Column(String(200), nullable=False)
-    nutrition_grade = Column(String(2))
-    purchase_places = Column(String(200))
-    manufacturing_places = Column(String(700))
-    countries = Column(String(50), nullable=False)
-    ingredients = Column(String(2048))
-    created_at = Column(Date(), default=datetime.now)
-    updated_at = Column(Date(), onupdate=datetime.now)
-
-    categories_id = Column(Integer, ForeignKey('categories.id'))
-    categories = relationship('Categories', back_populates="myfoods")"""
-
-
 # create tables
 def create_table():
     Base.metadata.drop_all(engine)

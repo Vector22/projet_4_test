@@ -37,9 +37,8 @@ def fill_table():
 
         #insert foods for each category
         tab_url = list()  # the page url liste table
-        for ind in range(1, MAX_FOODS_PAGES+1):
-            temp_url = cat.url + "/" + str(ind) + ".json"
-            tab_url.append(temp_url)
+        tab_url = [cat.url + '/' + str(ind) + '.json' for ind in
+                   range(1, MAX_FOODS_PAGES+1)]
 
         #add each aliment that respect the norme
         for j in range(len(tab_url)):

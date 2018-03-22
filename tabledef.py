@@ -29,7 +29,17 @@ class Categories(Base):
         self.url = url
 
     foods = relationship('Foods', back_populates="categories")
-    myfoods = relationship('MyFoods', back_populates="categories")
+
+
+class MyFoods(Base):
+    __tablename__ = "myfoods"
+
+    id = Column(Integer, primary_key=True)
+    saved_at = Column(Date(), default=datetime.now)
+    food_id = Column(Integer, ForeignKey('foods.id'))
+    food_substitute_id = Column(Integer, ForeignKey('foods.id'))
+    food = relationship('Foods', foreign_keys=[food_id])
+    food_substitute = relationship('Foods', foreign_keys=[food_substitute_id])
 
 
 class Foods(Base):
@@ -46,6 +56,8 @@ class Foods(Base):
 
     categories_id = Column(Integer, ForeignKey('categories.id'))
     categories = relationship('Categories', back_populates="foods")
+
+    #myfoods = relationship('MyFoods', back_populates="foods")
 
     def __repr__(self):
         print("\nName: {}".format(self.name))
@@ -68,7 +80,7 @@ class Foods(Base):
                                      self.ingredients, self.url)
 
 
-class MyFoods(Base):
+"""class MyFoods(Base):
     __tablename__ = "myfoods"
 
     id = Column(Integer, primary_key=True)
@@ -83,16 +95,7 @@ class MyFoods(Base):
     updated_at = Column(Date(), onupdate=datetime.now)
 
     categories_id = Column(Integer, ForeignKey('categories.id'))
-    categories = relationship('Categories', back_populates="myfoods")
-
-    def __str__(self):
-        return """\nName: {}
-        \nNutrition grade: {}\nCountry: {}\nPurchase places: {}
-        \nManufacturing places: {}\nIngredients: {}
-        \nMore infos: {}\n""".format(self.name, self.nutrition_grade,
-                                     self.countries, self.purchase_places,
-                                     self.manufacturing_places,
-                                     self.ingredients, self.url)
+    categories = relationship('Categories', back_populates="myfoods")"""
 
 
 # create tables

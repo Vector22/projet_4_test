@@ -250,6 +250,9 @@ def chooseFood(engine, categoryNumber):
                 addInDb = input("Save the food ? (y/n)")
                 if(addInDb in ("Y", "y")):
                     myFood = MyFoods()
+                    myFood.food_id = food.id
+                    myFood.food_substitute_id = subFood.id
+                    """
                     myFood.name = subFood.name
                     myFood.url = subFood.url
                     myFood.nutrition_grade = subFood.nutrition_grade
@@ -257,23 +260,9 @@ def chooseFood(engine, categoryNumber):
                     myFood.manufacturing_places = subFood.manufacturing_places
                     myFood.countries = subFood.countries
                     myFood.ingredients = subFood.ingredients
-                    myFood.categories_id = subFood.categories_id
+                    myFood.categories_id = subFood.categories_id"""
 
-                    #if the food exist, we update else we insert it
-                    if(session.query(exists().where(MyFoods.name == myFood.name)).scalar()):
-                        session.query(Foods).\
-                            filter(MyFoods.name == myFood.name).\
-                            update({"name": myFood.name,
-                                    "url": myFood.url,
-                                    "nutrition_grade": myFood.nutrition_grade,
-                                    "purchase_place": myFood.purchase_places,
-                                    "manufacturing_place": myFood.manufacturing_places,
-                                    "countries": myFood.countries,
-                                    "ingredients": myFood.ingredients,
-                                    "categories_id": myFood.categories_id
-                                    })
-                    else:
-                        session.add(myFood)
+                    session.add(myFood)
                     print("Food saved...")
                     session.commit()
                 else:
@@ -313,35 +302,14 @@ def chooseFood(engine, categoryNumber):
                     subFoodIndex = randrange(len(subFoods.all()))
                     subFood = subFoods.all()[subFoodIndex]
                     print(subFood)
-                    addInDb = input("Save the food ? (y/n)")
+                    addInDb = input("Save the two foods ? (y/n)")
                     if(addInDb in ("Y", "y")):
                         myFood = MyFoods()
-                        myFood.name = subFood.name
-                        myFood.url = subFood.url
-                        myFood.nutrition_grade = subFood.nutrition_grade
-                        myFood.purchase_places = subFood.purchase_places
-                        myFood.manufacturing_places = subFood.manufacturing_places
-                        myFood.countries = subFood.countries
-                        myFood.ingredients = subFood.ingredients
-                        myFood.categories_id = subFood.categories_id
+                        myFood.food_id = food.id
+                        myFood.food_substitute_id = subFood.id
 
-                        #if the food exist, we update else we insert it
-                        if(session.query(exists().where(MyFoods.name == myFood.name)).scalar()):
-                            session.query(Foods).\
-                                filter(MyFoods.name == myFood.name).\
-                                update({"name": myFood.name,
-                                        "url": myFood.url,
-                                        "nutrition_grade": myFood.nutrition_grade,
-                                        "purchase_place": myFood.purchase_places,
-                                        "manufacturing_place": myFood.manufacturing_places,
-                                        "countries": myFood.countries,
-                                        "ingredients": myFood.ingredients,
-                                        "categories_id": myFood.categories_id
-                                        })
-                            session.commit()
-                        else:
-                            session.add(myFood)
-                            session.commit()
+                        session.add(myFood)
+                        session.commit()
 
                         print("Food saved...")
                     else:
@@ -360,8 +328,10 @@ def showFavoritesFoods(engine):
     connection = engine.connect()
     Session = sessionmaker(bind=engine)
     session = Session()
-    #query the db about favorites foods of given category
-    for food in session.query(MyFoods).order_by(MyFoods.updated_at).all():
+    #query the db about favorites foods saved
+    q = session.query(Foods).join(MyFoods.food).all() +\
+        session.query(Foods).join(MyFoods.food_substitute).all()
+    for food in q:
         print("-" * 50)
         print(food)
         print("-" * 50)

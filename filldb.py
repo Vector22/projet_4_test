@@ -1,18 +1,30 @@
 from sqlalchemy.orm import sessionmaker
 import requests
 
-from functions import present
 from tabledef import engine, Categories, Foods
 
 #define the maximun number of categories to request
-MAX_FOODS_CAT = 5
+MAX_FOODS_CAT = 10
 #define the max page per foods categories to request
 #One categories can be composed of many many foods...
 MAX_FOODS_PAGES = 5
 
 
+def present(cle, table):
+    """function that checks if elements belong to
+    the keys of a dictionary"""
+    resultat = True
+    for i in cle:
+        if i in table.keys():
+            pass
+        else:
+            resultat = False
+            break  # sort de la boucle
+    return resultat
+
+
 def fill_table():
-    global MAX_FOODS_CAT, MAX_FOODS_PAGES
+    global MAX_FOODS
     connection = engine.connect()
     Session = sessionmaker(bind=engine)
     session = Session()
@@ -74,3 +86,16 @@ def fill_table():
 
     #close the connection
     connection.close()
+
+
+def maxFoods():
+    """Function that return the total foods numbers
+    saved in the db"""
+    connection = engine.connect()
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    #take the total number of registered foods
+    MAX_FOODS = session.query(Foods).count()
+    #close the connection
+    connection.close()
+    return MAX_FOODS

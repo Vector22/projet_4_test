@@ -4,25 +4,13 @@ from random import randrange
 
 from tabledef import engine, Categories, Foods, MyFoods
 
-MAX_FOODS_CAT = 5
-
-
-#Fonction qui verifie si des elts app aux cles d'un dico
-def present(cle, table):
-    resultat = True
-    for i in cle:
-        if i in table.keys():
-            pass
-        else:
-            resultat = False
-            break  # sort de la boucle
-    return resultat
+from filldb import *
 
 
 def showStartMenu():
     """display the start menu"""
     print("\n1: Replace a food")
-    print("2: Show the registered foods")
+    print("2: Show the saved foods")
     print("0: Quit\n")
 
 
@@ -42,6 +30,13 @@ def getStartMenuChoice():
             print("The choice must be a number within 1, 2 or 0")
             ok = False
     return choice
+
+
+#section show registre
+def showSavedFoodsMenu():
+    print("\n1: Show the simple list (foods names)")
+    print("2: Show the detailled list (all foods informations)")
+    print("0: Back to start")
 
 
 #section replace a food
@@ -193,7 +188,7 @@ def getFoodsPage(maxPage):
     return choice
 
 
-def getFoodsNumber():
+def getFoodsNumber(maxFoods):
     ok = False
     choice = None
     while (not ok):
@@ -202,7 +197,7 @@ def getFoodsNumber():
         except ValueError:
             print("The number entered is not an integer")
 
-        if(choice > 0):
+        if(choice > 0 and choice <= maxFoods):
             ok = True
         else:
             print("Number must be positive; try again")
@@ -210,7 +205,7 @@ def getFoodsNumber():
     return choice
 
 
-def chooseFood(engine, categoryNumber):
+def chooseFood(engine, categoryNumber, maxFoods):
     #connect to the db
     connection = engine.connect()
     Session = sessionmaker(bind=engine)
@@ -229,7 +224,7 @@ def chooseFood(engine, categoryNumber):
 
     if(foodsMenuChoice is 1):
         #choose a food on the first page
-        foodNumber = getFoodsNumber()
+        foodNumber = getFoodsNumber(maxFoods)
         #query the db about this food id
         if session.query(exists().where(Foods.id == foodNumber)).scalar():
             food = session.query(Foods).filter(Foods.id == foodNumber).first()
@@ -252,15 +247,6 @@ def chooseFood(engine, categoryNumber):
                     myFood = MyFoods()
                     myFood.food_id = food.id
                     myFood.food_substitute_id = subFood.id
-                    """
-                    myFood.name = subFood.name
-                    myFood.url = subFood.url
-                    myFood.nutrition_grade = subFood.nutrition_grade
-                    myFood.purchase_places = subFood.purchase_places
-                    myFood.manufacturing_places = subFood.manufacturing_places
-                    myFood.countries = subFood.countries
-                    myFood.ingredients = subFood.ingredients
-                    myFood.categories_id = subFood.categories_id"""
 
                     session.add(myFood)
                     print("Food saved...")
@@ -284,7 +270,7 @@ def chooseFood(engine, categoryNumber):
         foodsMenuChoice2 = getFoodsMenuChoice2()
         if(foodsMenuChoice2 is 1):
             #choose a food on the selected page
-            foodNumber = getFoodsNumber()
+            foodNumber = getFoodsNumber(maxFoods)
             #query the db about this food id
             if session.query(exists().where(Foods.id == foodNumber)).scalar():
                 food = session.query(Foods).filter(Foods.id == foodNumber).first()
@@ -324,7 +310,7 @@ def chooseFood(engine, categoryNumber):
     connection.close()
 
 
-def showFavoritesFoods(engine):
+def showFavoritesFoods(engine, detailled=False):
     connection = engine.connect()
     Session = sessionmaker(bind=engine)
     session = Session()
@@ -333,13 +319,17 @@ def showFavoritesFoods(engine):
         session.query(Foods).join(MyFoods.food_substitute).all()
     for food in q:
         print("-" * 50)
-        print(food)
+        if(detailled):
+            print(food)
+        else:
+            print(food.name)
         print("-" * 50)
     connection.close()
 
 
 def run():
-    global MAX_FOODS_CAT
+    MAX_FOODS = maxFoods()
+    print("\n\nAliments total : {}\n\n".format(MAX_FOODS))
     mainLoop = True
     while(mainLoop):
         subLoop = True
@@ -352,14 +342,24 @@ def run():
                 categoryMenuChoice = getCategoryMenuChoice()
                 if(categoryMenuChoice is 1):
                     categoryNumber = getCategoryNumberChoice(MAX_FOODS_CAT)
-                    chooseFood(engine, categoryNumber)
+                    chooseFood(engine, categoryNumber, MAX_FOODS)
                 else:
                     #go back to the start menu
                     subLoop = False
             elif(startMenuChoice is 2):
-                print("\n\nYour favorites foods liste : \n")
-                showFavoritesFoods(engine)
-                subLoop = False
+                sectionLoop = True
+                while(sectionLoop):
+                    showSavedFoodsMenu()
+                    choice = getStartMenuChoice()
+                    if choice is 1:
+                        print("\n\nYour favorites foods name list : \n")
+                        showFavoritesFoods(engine)
+                    elif choice is 2:
+                        print("\n\nYour favorites foods list detailled :\n")
+                        showFavoritesFoods(engine, True)
+                    else:
+                        sectionLoop = False
+                        subLoop = False
             else:
                 print("Bye...")
                 subLoop = False
